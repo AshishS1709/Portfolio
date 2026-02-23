@@ -508,6 +508,202 @@
             margin: 0 auto;
         }
 
+        /* Chat Widget Styles */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chat-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border: none;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .chat-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5);
+        }
+
+        .chat-window {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-window.active {
+            display: flex;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .close-chat {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background: var(--bg-alt);
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.bot {
+            text-align: left;
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-bubble {
+            display: inline-block;
+            max-width: 80%;
+            padding: 0.75rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .message.bot .message-bubble {
+            background: white;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .message.user .message-bubble {
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+
+        .chat-input-container {
+            display: flex;
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            background: white;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary);
+        }
+
+        .send-btn {
+            margin-left: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .send-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            padding: 0.75rem 1rem;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            border-bottom-left-radius: 0.25rem;
+        }
+
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            margin-right: 4px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .hero-title {
@@ -521,6 +717,10 @@
             }
             .timeline::before {
                 left: 0;
+            }
+            .chat-window {
+                width: calc(100vw - 40px);
+                right: 20px;
             }
         }
     </style>
@@ -814,6 +1014,30 @@
         </div>
     </section>
 
+    <!-- Chat Widget -->
+    <div id="chatWidget" class="chat-widget">
+        <button id="chatBtn" class="chat-btn" onclick="toggleChat()">
+            <span id="chatBtnIcon">💬</span>
+        </button>
+        <div id="chatWindow" class="chat-window">
+            <div class="chat-header">
+                <h3>Ash AI Bot</h3>
+                <button onclick="toggleChat()" class="close-chat">×</button>
+            </div>
+            <div id="chatMessages" class="chat-messages"></div>
+            <div class="chat-input-container">
+                <input 
+                    type="text" 
+                    id="chatInput" 
+                    class="chat-input" 
+                    placeholder="Type a message..."
+                    onkeypress="handleChatKeypress(event)"
+                />
+                <button onclick="sendMessage()" class="send-btn">Send</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer>
         <div class="container">
@@ -864,6 +1088,155 @@
                 navLinks.style.borderBottom = '1px solid var(--border)';
             }
         });
+
+        // Chat Bot Logic
+        let chatOpen = false;
+        let conversationStarted = false;
+
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            const chatBtnIcon = document.getElementById('chatBtnIcon');
+            chatOpen = !chatOpen;
+            
+            if (chatOpen) {
+                chatWindow.classList.add('active');
+                chatBtnIcon.textContent = '✕';
+                if (!conversationStarted) {
+                    initializeBot();
+                    conversationStarted = true;
+                }
+            } else {
+                chatWindow.classList.remove('active');
+                chatBtnIcon.textContent = '💬';
+            }
+        }
+
+        function initializeBot() {
+            setTimeout(() => {
+                addBotMessage("Hello! 👋");
+            }, 500);
+            
+            setTimeout(() => {
+                addBotMessage("I'm Ash AI Bot, your guide to Ashish Singh's portfolio.");
+            }, 1500);
+            
+            setTimeout(() => {
+                addBotMessage("Ashish is an AI Engineer specializing in building production-ready AI systems using LLMs, RAG pipelines, and cloud infrastructure.");
+            }, 2500);
+            
+            setTimeout(() => {
+                addBotMessage("He has experience with:\n• LangChain & LangGraph\n• FastAPI & Docker\n• AWS Cloud Services\n• CI/CD Pipelines");
+            }, 4000);
+            
+            setTimeout(() => {
+                addBotMessage("What would you like to know? You can ask about:\n• Projects\n• Experience\n• Skills\n• Contact Information");
+            }, 5500);
+        }
+
+        function addBotMessage(text) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message bot';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = text;
+            
+            messageDiv.appendChild(bubble);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addUserMessage(text) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user';
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = text;
+            
+            messageDiv.appendChild(bubble);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typingIndicator';
+            
+            const indicator = document.createElement('div');
+            indicator.className = 'typing-indicator';
+            indicator.innerHTML = '<span></span><span></span><span></span>';
+            
+            typingDiv.appendChild(indicator);
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        function getBotResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            if (message.includes('project')) {
+                return "Ashish has built several impressive projects:\n\n• InsightLoop - AI Research Agent\n• Multimodal RAG System\n• Traffic Violation Detection\n• AI Repair Advice System\n\nCheck out the Projects section for more details!";
+            }
+            
+            if (message.includes('experience') || message.includes('work')) {
+                return "Ashish currently works as an AI Engineer at The Link AI, where he builds autonomous AI research agents and productivity tools. Previously, he worked at Technorizen developing AI-powered systems.";
+            }
+            
+            if (message.includes('skill')) {
+                return "Ashish's core skills include:\n\n• AI/ML: LLMs, LangChain, LangGraph, RAG\n• Backend: Python, FastAPI, Flask\n• DevOps: Docker, AWS, CI/CD\n• Tools: n8n, Telegram Bots\n\nHe specializes in deploying AI models to production!";
+            }
+            
+            if (message.includes('contact') || message.includes('email') || message.includes('reach')) {
+                return "You can reach Ashish at:\n\n📧 Email: ashishs2360@gmail.com\n💼 LinkedIn: /in/ashishsingh\n🔗 GitHub: @AshishS1709\n📱 Phone: +91 8839784477";
+            }
+            
+            if (message.includes('hello') || message.includes('hi') || message.includes('hey')) {
+                return "Hello! How can I help you learn more about Ashish's portfolio?";
+            }
+            
+            if (message.includes('thank')) {
+                return "You're welcome! Feel free to explore the portfolio or reach out to Ashish directly. 😊";
+            }
+            
+            // Default response
+            return "I can help you learn about Ashish's:\n• Projects\n• Experience\n• Skills\n• Contact Information\n\nWhat would you like to know?";
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message === '') return;
+            
+            addUserMessage(message);
+            input.value = '';
+            
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = getBotResponse(message);
+                addBotMessage(response);
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function handleChatKeypress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
     </script>
 </body>
 </html>
